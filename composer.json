@@ -1,0 +1,20 @@
+{
+    "name": "cosman/queue-client",
+    "description": "A simple client for interacting with cosman/queue service",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Agbitor Cosman",
+            "email": "agbitorcosman@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+         "psr-4": {
+             "Cosman\\Queue\\Client\\": "src/Cosman/Queue/Client"
+         }
+    }
+}
