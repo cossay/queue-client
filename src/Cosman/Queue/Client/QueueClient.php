@@ -4,7 +4,6 @@ namespace Cosman\Queue\Client;
 
 use Cosman\Queue\Client\Connection\QueueConnection;
 use Cosman\Queue\Client\Http\Request\ProjectRequest;
-use function GuzzleHttp\Promise\settle;
 
 /**
  *
