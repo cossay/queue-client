@@ -6,6 +6,8 @@ use Cosman\Queue\Client\Connection\QueueConnection;
 use Psr\Http\Message\ResponseInterface;
 use Cosman\Queue\Client\Support\Reader\PropertyReader;
 use Cosman\Queue\Client\Http\Response\Response;
+use Cosman\Queue\Client\Http\Response\Collection;
+use Cosman\Queue\Client\Model\BaseModel;
 
 /**
  *
@@ -53,26 +55,33 @@ abstract class BaseRequest
     }
 
     /**
-     * Formats a collection of responses
-     * 
-     * @param iterable $models
-     * @return iterable
+     * Formats a response that contains a list of items
+     *
+     * @param Response $response
+     * @return \Cosman\Queue\Client\Http\Response\Collection
      */
-    protected function formatResponses(iterable $models): iterable
+    protected function formatResponses(Response $response): Collection
     {
+        $payload = $response->getPayload();
+        
+        $modelArray = $payload['collection'] ?? [];
+        $modelCounts = $payload['recordCounts'] ?? 0;
+        $hasMoreModels = $payload['hasMore'] ?? false;
+        
         $formatted = [];
         
-        foreach ($models as $model) {
-            $formatted[] = $this->formatResponse($model);
+        foreach ($modelArray as $model) {
+            $formatted[] = $this->format($model);
         }
         
-        return $formatted;
+        return new Collection($formatted, $modelCounts, $hasMoreModels);
     }
 
     /**
-     * Formats a single response
+     * Formats a model containing a single item
      *
      * @param mixed $model
+     * @return \Cosman\Queue\Client\Model\BaseModel|NULL
      */
-    abstract protected function formatResponse($model);
+    abstract protected function format($model): ?BaseModel;
 }

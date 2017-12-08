@@ -2,10 +2,11 @@
 declare(strict_types = 1);
 namespace Cosman\Queue\Client\Http\Request;
 
+use Cosman\Queue\Client\Model\BaseModel;
+use Cosman\Queue\Client\Model\Client;
+use Cosman\Queue\Client\Model\Project;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
-use Cosman\Queue\Client\Http\Response\Response;
-use Cosman\Queue\Client\Model\Project;
 
 /**
  *
@@ -24,12 +25,35 @@ class ProjectRequest extends BaseRequest
     public function create(Project $project): PromiseInterface
     {
         $promise = $this->connection->getHttpClient()->postAsync('projects', array(
-            'name' => $project->getName(),
-            'description' => $project->getDescription()
+            'json' => array(
+                'name' => $project->getName(),
+                'description' => $project->getDescription()
+            )
         ));
         
         return $promise->then(function (ResponseInterface $response) {
-            return $this->formatResponse($this->decodeReponse($response)
+            return $this->format($this->decodeReponse($response)
+                ->getPayload());
+        });
+    }
+
+    /**
+     * Generate request to update existing project
+     *
+     * @param Project $project
+     * @return PromiseInterface
+     */
+    public function update(Project $project): PromiseInterface
+    {
+        $promise = $this->connection->getHttpClient()->putAsync(sprintf('projects/%s', $project->getCode()), array(
+            'json' => array(
+                'name' => $project->getName(),
+                'description' => $project->getDescription()
+            )
+        ));
+        
+        return $promise->then(function (ResponseInterface $response) {
+            return $this->format($this->decodeReponse($response)
                 ->getPayload());
         });
     }
@@ -51,22 +75,29 @@ class ProjectRequest extends BaseRequest
         ));
         
         return $promise->then(function (ResponseInterface $response) {
-            return $this->formatResponses($this->decodeReponse($response)
-                ->getPayload());
+            return $this->formatResponses($this->decodeReponse($response));
         });
     }
 
     /**
      *
      * {@inheritdoc}
-     * @see \Cosman\Queue\Client\Http\Request\BaseRequest::formatResponse()
+     * @see \Cosman\Queue\Client\Http\Request\BaseRequest::format()
      */
-    protected function formatResponse(Response $response)
+    protected function format($model): ?BaseModel
     {
-        if (200 !== $response->getCode()) {
-            throw new \Exception($response->getMessage(), $response->getCode());
+        $project = Project::createInstance($model);
+        
+        if (! ($project instanceof Project)) {
+            return null;
         }
         
-        return Project::createInstance($response->getPayload());
+        $client = Client::createInstance($model['client'] ?? []);
+        
+        if ($client) {
+            $project->setClient($client);
+        }
+        
+        return $project;
     }
 }
