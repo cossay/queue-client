@@ -101,6 +101,17 @@ class BaseModel implements \JsonSerializable
     }
 
     /**
+     * 
+     * @return array
+     */
+    public function toQueueEntity(): array
+    {
+        $attributes = $this->toArray();
+        
+        return array_filter($attributes);
+    }
+
+    /**
      * Converts model into an array
      *
      * @return array

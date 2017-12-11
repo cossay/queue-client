@@ -8,6 +8,7 @@ use Cosman\Queue\Client\Support\Reader\PropertyReader;
 use Cosman\Queue\Client\Http\Response\Response;
 use Cosman\Queue\Client\Http\Response\Collection;
 use Cosman\Queue\Client\Model\BaseModel;
+use Cosman\Queue\Client\Exception\QueueClientException;
 
 /**
  *
@@ -49,9 +50,15 @@ abstract class BaseRequest
         
         $decodedResponse = new Response();
         
-        return $decodedResponse->setCode($reader->read('code'))
+        $decodedResponse->setCode($reader->read('code'))
             ->setMessage($reader->read('message'))
             ->setPayload($reader->read('payload'));
+        
+        if (200 !== $decodedResponse->getCode()) {
+            throw new QueueClientException((string) $decodedResponse->getMessage(), (int) $decodedResponse->getCode());
+        }
+        
+        return $decodedResponse;
     }
 
     /**

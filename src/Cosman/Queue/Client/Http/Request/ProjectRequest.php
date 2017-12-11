@@ -20,7 +20,7 @@ class ProjectRequest extends BaseRequest
      * Generate request to create a new project
      *
      * @param Project $project
-     * @return PromiseInterface
+     * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function create(Project $project): PromiseInterface
     {
@@ -41,7 +41,7 @@ class ProjectRequest extends BaseRequest
      * Generate request to update existing project
      *
      * @param Project $project
-     * @return PromiseInterface
+     * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function update(Project $project): PromiseInterface
     {
@@ -63,7 +63,7 @@ class ProjectRequest extends BaseRequest
      *
      * @param int $limit
      * @param int $offset
-     * @return PromiseInterface
+     * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function fetch(int $limit = self::MAX_FETCH_LIMIT, int $offset = self::MIN_FETCH_OFFSET): PromiseInterface
     {
@@ -76,6 +76,37 @@ class ProjectRequest extends BaseRequest
         
         return $promise->then(function (ResponseInterface $response) {
             return $this->formatResponses($this->decodeReponse($response));
+        });
+    }
+
+    /**
+     * Generates request to fetch a single project by its unique code
+     *
+     * @param string $code
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function fetchByCode(string $code): PromiseInterface
+    {
+        $promise = $this->connection->getHttpClient()->getAsync(sprintf('projects/%s', $code));
+        
+        return $promise->then(function (ResponseInterface $response) {
+            return $this->format($this->decodeReponse($response)
+                ->getPayload());
+        });
+    }
+
+    /**
+     * Generates request to delete a single project
+     *
+     * @param String $code
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     */
+    public function delete(string $code): PromiseInterface
+    {
+        $promise = $this->connection->getHttpClient()->deleteAsync(sprintf('projects/%s', $code));
+        
+        return $promise->then(function (ResponseInterface $response) {
+            return true;
         });
     }
 

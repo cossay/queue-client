@@ -53,7 +53,7 @@ class Response
      *
      * @return string|NULL
      */
-    public function getMessage(): ?int
+    public function getMessage(): ?string
     {
         return $this->message;
     }
